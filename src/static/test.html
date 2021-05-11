@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const { sqrt, sin, pow, ceil, max, tan, PI, floor } = Math
+
+    const rotate = 15
+    const fontSize = 20
+    const width = 300
+    console.log('width: ', width);
+
+    const height = ceil(tan(rotate * PI / 180) * width) + 3 * fontSize
+    // const height = 600
+
+    const canvas = document.getElementById("canvas");
+    canvas.width = width
+    canvas.height = height
+
+    const ctx = canvas.getContext("2d");
+    ctx.font = `${fontSize}px 黑体`
+    ctx.textBaseline = "middle"
+    ctx.textAlign = "start"
+
+    console.log('height: ', height);
+
+    
+    
+    // const text = '测试文字测试文字-测试文字测试文字测试文字-测试文字'
+    const text = '明源云客电子商务有限公司电子商务有限公司云客电子商务有限公司'
+    // 字符串的长度
+    const textLen = ctx.measureText(text).width
+    // 单个字符的宽度
+    const wordWidth = ceil(textLen / text.length)
+    console.log('wordWidth: ', wordWidth);
+    // 左侧偏移的长度
+    const offX = ceil(sin(rotate * Math.PI / 180) * height)
+    console.log('offX: ', offX);
+
+    // 水印斜边的长度
+    const r = sqrt(pow(width, 2) + pow(height, 2))
+    console.log('r: ', r);
+
+    // 旋转角度
+    ctx.rotate(- rotate * Math.PI / 180);
+
+    // 斜边放字的剩余长度
+    let remainLen = r - 2 * offX
+    console.log('remainLen: ', remainLen);
+    console.log('可以放的字符个数: ', remainLen / wordWidth);
+
+
+    let initX = 0
+    let initY = height - 3* fontSize
+
+
+    for (let i = 0;i < text.length; i++) {
+      if (remainLen > wordWidth) {
+        ctx.fillText(text[i], initX, initY);
+        initX += wordWidth
+        remainLen -= wordWidth
+      } else {
+        initY += fontSize
+        remainLen =  r - 2 * offX
+        initX = 0
+        ctx.fillText(text[i], initX, initY);
+        initX += wordWidth
+      }
+    }
+
+  </script>
+</body>
+
+</html>
