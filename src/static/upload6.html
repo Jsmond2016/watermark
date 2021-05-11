@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+    <input type="file" name="file" id="file">
+  <br>
+  <h2>转换后</h2>
+  <img id="img-test-02" src="" alt="">    
+  <img id="img-test-01" src="" alt="">
+
+  <script>
+    const toBase64 = file => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = error => reject(error);
+});
+
+var file = document.getElementById('file');
+file.onchange = async function (e) {
+  var f1 = e.target.files[0];
+  let name = f1.name
+  
+   const fileUrl = await toBase64(f1)
+   const img = new Image()
+   
+   img.src = fileUrl
+
+   img.onload = function () {
+     const canvas = document.createElement('canvas');
+     const canvasWidth = img.width
+     const canvasHeight = img.height
+     canvas.width = canvasWidth;
+     canvas.height = canvasHeight;
+     const ctx = canvas.getContext('2d');
+     
+     
+     ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
+     
+    //  ctx.clearRect(0, 0, canvas.width, canvas.height); 
+     const watermarkCanvas = createWatermark()
+     const pat = ctx.createPattern(watermarkCanvas, 'repeat');
+  
+    //  ctx.rect(0, 0, canvas.width, canvas.height);
+     ctx.fillStyle = pat;
+     ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+     
+     
+     const base64Url = canvas.toDataURL();
+     const imgEle = document.getElementById('img-test-02')
+     imgEle.src = base64Url
+   }
+}
+
+
+
+// function createWatermark() {
+//   const c = document.getElementById("myCanvas");
+//   const ctx = c.getContext("2d");
+  
+//   ctx.clearRect(0,0, c.width, c.height); 
+  
+//   const img = getImage()
+  
+//   const pat=ctx.createPattern(img, 'repeat');
+  
+//   ctx.fillStyle = pat;
+//   ctx.fillRect(0,0,c.width, c.height);
+  
+//   const base64Url = c.toDataURL();
+//   const imgEle = document.getElementById('img-test-02')
+//   imgEle.src = base64Url
+// }
+
+function createWatermark() {
+  const imgCanvas = document.createElement('canvas')
+  
+  const { sqrt, pow, sin, tan } = Math;
+  const watermarkWidth = 120
+  const watermarkHeight = 80
+  
+  
+  imgCanvas.width = sqrt(pow(watermarkWidth, 2) + pow(watermarkHeight, 2));
+  imgCanvas.height = watermarkHeight;
+  
+  const imgCtx = imgCanvas.getContext('2d')
+
+  imgCtx.font = "20px Georgia";
+  imgCtx.fillStyle="#0000ff";
+  const text = 'hello-world'
+  const width = imgCtx.measureText(text).width;
+  const rotate = 30
+ 
+  imgCtx.rotate(-rotate * Math.PI / 180)
+ 
+  const Y = parseInt(sin(rotate * Math.PI / 180) * 300, 10);
+  const X = -parseInt(Y / tan((90 - rotate) * Math.PI / 180), 10);
+  
+  imgCtx.fillText(text,X + 60, Y - 80);
+  const base64Url = imgCanvas.toDataURL()
+  
+  const img = new Image()
+  img.src = base64Url
+  const imgEle = document.getElementById('img-test-01')
+  imgEle.src = base64Url
+  return imgCanvas
+}
+
+// getImage()
+// draw('repeat')
+
+  </script>
+
+</body>
+</html>

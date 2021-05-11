@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <input type="file" name="file" id="file">
+  <br>
+  <h2>转换后</h2>
+  <img id="img-test-02" src="" alt="">
+  <img id="img-test-01" src="" alt="">
+  <img id="watermark" src="" alt="">
+
+  <script>
+    const toBase64 = file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+
+    var file = document.getElementById('file');
+    file.onchange = async function (e) {
+      var f1 = e.target.files[0];
+      let name = f1.name
+
+      const fileUrl = await toBase64(f1)
+      const img = new Image()
+      img.src = fileUrl
+      img.onload = function () {
+        const { width, height } = img
+        // 图片等比例缩小了2倍
+        const scaleNum = 1
+        const { canvas, ctx, canvasWidth, canvasHeight } = createImgCanvas(width / scaleNum, height / scaleNum)
+        ctx.drawImage(img, 0, 0, width, height, 0, 0, canvasWidth, canvasHeight);
+        addWaterMark(ctx, canvasWidth, canvasHeight)
+
+        const base64Url = canvas.toDataURL();
+        const imgEle = document.getElementById('img-test-02')
+        imgEle.src = base64Url
+      }
+    }
+
+    function createImgCanvas(width, height) {
+      const canvas = document.createElement('canvas');
+      const canvasWidth = width
+      const canvasHeight = height
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      const ctx = canvas.getContext('2d');
+      return { canvas, ctx, canvasWidth, canvasHeight }
+    }
+
+    function addWaterMark(imgCtx, width, height) {
+      const watermarkCanvas = createWatermark(width, height)
+      const pat = imgCtx.createPattern(watermarkCanvas, 'repeat');
+      imgCtx.fillStyle = pat;
+      imgCtx.fillRect(0, 0, width, height);
+    }
+
+    function createWatermark(imgWidth, imgHeight, text) {
+      const watermarkCanvas = document.createElement('canvas')
+      const { sqrt, pow, sin, cos, tan } = Math;
+      console.log('imgWidth * 0.02', imgWidth);
+      const fontSize = parseInt(imgWidth * 0.02, 10) > 12 ? parseInt(imgWidth * 0.02, 10) : 12
+      console.log('fontSize: ', fontSize);
+
+      // 水印实际长度, 2列
+      const watermarkWidth = parseInt((imgWidth) / 3, 10)
+      // 水印实际高度， 5行
+      const watermarkHeight = parseInt((imgHeight)  / 5, 10) + 3 * fontSize
+      // 逆时针旋转角度
+      const rotate = 15
+
+      watermarkCanvas.width = sqrt(pow(watermarkWidth, 2) + pow(watermarkHeight, 2));
+      watermarkCanvas.height = watermarkHeight;
+
+      const watermarkCtx = watermarkCanvas.getContext('2d')
+      watermarkCtx.font = `${fontSize}px Microsoft Yahei`
+      watermarkCtx.fillStyle = "rgba(128, 128, 128, 0.5)";
+      // watermarkCtx.textAlign = 'right';
+ 
+      // 30个汉字
+      const text1 = "明源云客电子商务有限公司电子商务有限公司云客电子商务有限公司"
+      // 60个英文字符
+      // const text1 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      // 1个字符
+      // const text1 = "1"
+      // 23个汉字
+      // const text1 = "明源云客电子商务有限公司明源云客电子商务有限公"
+      // 10个汉字
+      // const text1 = "明源云客电子商务有限"
+      const textWidth = watermarkCtx.measureText(text).width;
+
+      watermarkCtx.rotate(-rotate * Math.PI / 180)
+      const Y = parseInt(sin(rotate * Math.PI / 180) * watermarkWidth, 10);
+      const X = -parseInt(Y / tan((90 - rotate) * Math.PI / 180), 10);
+      renderText(watermarkCtx, watermarkWidth, text1, X + fontSize, Y + fontSize, fontSize * 1.4)
+
+
+      const base64Url = watermarkCanvas.toDataURL();
+      const imgEle = document.getElementById('watermark')
+      imgEle.src = base64Url
+      imgEle.style.border = "1px solid black"
+
+      return watermarkCanvas
+    }
+
+    function renderText(ctx, width, str, initX, initY, lineHeight = 20) {
+      var lineWidth = 0;
+      var canvasWidth = width;
+      var lastSubStrIndex = 0;
+      for (let i = 0;i < str.length;i++) {
+        lineWidth += ctx.measureText(str[i]).width;
+        // 行内剩余空间放不下一个字的时候
+        if (lineWidth > canvasWidth - initX) {
+          // 减去initX,防止边界出现的问题
+          ctx.fillText(str.substring(lastSubStrIndex, i), initX, initY);
+          initY += lineHeight;
+          lineWidth = 0;
+          lastSubStrIndex = i;
+        }
+        if (i === str.length - 1) {
+          ctx.fillText(str.substring(lastSubStrIndex, i + 1), initX, initY);
+        }
+      }
+    }
+
+
+  </script>
+
+</body>
+
+</html>

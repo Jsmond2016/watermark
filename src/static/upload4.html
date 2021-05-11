@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset=utf-8>
+  <title>文件上传</title>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <div>
+    <input type="file" name="file" id="file">
+    <br>
+    <h2>转换后</h2>
+    <img id="img-test-01" src="" alt="">
+    <h2>水印图</h2>
+    <img id="watermark" src="" alt="">
+    <h2>other</h2>
+    <img id="img-test-02" src="" alt="">
+    <h2>drawImage</h2>
+    <img id="other1" src="" alt="">
+  </div>
+  <script type="text/javascript">
+
+    var file = document.getElementById('file');
+    // console.log('file: ', file.value);
+    // const instance = axios.create({
+    //   withCredentials: true
+    // });
+
+    // 先加水印再上传，此方法改变源文件 -------------
+
+    const toBase64 = file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+
+    //将base64转换为文件
+    const dataURLtoFile = (dataurl, filename) => {
+      console.log('dataurl: ', dataurl);
+      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, { type: mime });
+    }
+
+    const renderTextCanvas = (ctx, width, str, initX, initY, lineHeight = 20) => {
+
+      var lineWidth = 0;
+      var canvasWidth = width;
+      var lastSubStrIndex = 0;
+      for (let i = 0;i < str.length;i++) {
+        lineWidth += ctx.measureText(str[i]).width;
+
+        if (lineWidth > canvasWidth - initX) {
+          //减去initX,防止边界出现的问题
+          ctx.fillText(str.substring(lastSubStrIndex, i), initX, initY);
+          initY += lineHeight;
+          lineWidth = 0;
+          lastSubStrIndex = i;
+        }
+        if (i === str.length - 1) {
+          ctx.fillText(str.substring(lastSubStrIndex, i + 1), initX, initY);
+        }
+      }
+    }
+
+
+    createImageCanvas = (width, height) => {
+      // 图片画布
+      const imgCanvas = document.createElement('canvas');
+      imgCanvas.width = width
+      imgCanvas.height = height
+      const imgCtx = imgCanvas.getContext('2d')
+      return { imgCanvas, imgCtx }
+    }
+
+    createWaterCanvas = (imgWidth) => {
+      // 创建容纳水印的 小画布块
+      const watermarkCanvas = document.createElement('canvas');
+      const waterCtx = watermarkCanvas.getContext('2d')
+
+      // 设置 水印 options
+      const fontSize = imgWidth * 0.02
+      const options = {
+        text: "明源云客电子商务有限公司",
+        font: `${fontSize}px Microsoft Yahei`,
+        // fillStyle: "rgba(200,200, 200, 0.7)",
+        fillStyle: "#0000ff",
+        watermarkWidth: 280,
+        watermarkHeight: 180,
+        textAlign: 'center',
+        textBaseline: 'middle'
+      };
+      // 逆时针旋转角度
+      const rotate = 30
+      const { text, font, fillStyle, watermarkWidth, watermarkHeight, textAlign, textBaseline } = options
+      const { sqrt, pow, sin, tan } = Math;
+      watermarkCanvas.width = sqrt(pow(watermarkWidth, 2) + pow(watermarkHeight, 2))
+      watermarkCanvas.height = watermarkHeight / 2;
+      waterCtx.rotate(-rotate * Math.PI / 180)
+      waterCtx.font = font
+      waterCtx.fillStyle = fillStyle
+      waterCtx.width = watermarkWidth
+      waterCtx.height = watermarkHeight
+      waterCtx.textAlign = textAlign
+      waterCtx.textBaseline = textBaseline
+
+      const Y = parseInt(sin(rotate * Math.PI / 180) * watermarkWidth, 10);
+      const X = -parseInt(Y / tan((90 - rotate) * Math.PI / 180), 10);
+      const initX = X + 10
+      const initY = Y + fontSize + 20
+
+      renderTextCanvas(waterCtx, watermarkWidth, text, initX, initY, fontSize * 1.4)
+
+      const url = watermarkCanvas.toDataURL('image/jpg')
+      const img = document.getElementById('watermark')
+      img.src = url
+
+      return {
+        watermarkCanvas,
+        waterCtx
+      }
+    }
+
+    // 添加水印
+    const addWaterMark = (watermarkCanvas, imgCtx, imgCanvas) => {
+      //平铺--重复小块的canvas
+      var pat = imgCtx.createPattern(watermarkCanvas, "repeat");
+      imgCtx.fillStyle = pat;
+      imgCtx.fillRect(0, 0, imgCanvas.width, imgCanvas.height);
+    }
+
+    // 绘图
+    const drawImage = (img, imgCtx, imageCanvas, imgWidth, imgHeight) => {
+      imgCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+      imageCanvas.width = imgWidth;
+      imageCanvas.height = imgHeight;
+      imgCtx.drawImage(img, 0, 0, imgWidth, imgHeight);
+
+      const url = imageCanvas.toDataURL('image/jpg')
+      const img1 = document.getElementById('other1')
+      img1.src = url
+      return { ctx: imgCtx, canvas: imageCanvas }
+    }
+
+    file.onchange = async function (e) {
+      const f1 = e.target.files[0];
+      let name = f1.name
+
+      const fileUrl = await toBase64(f1)
+      
+      const img = new Image()
+      img.src = fileUrl
+      
+      img.onload = function () {
+
+        const imgWidth = img.width
+        const imgHeight = img.height
+
+        // 创建图片画布
+        const { imgCanvas, imgCtx } = createImageCanvas(imgWidth, imgHeight)
+
+        // 创建水印
+        const { watermarkCanvas, waterCtx } = createWaterCanvas(imgWidth)
+
+        const {ctx, canvas } = drawImage(img, imgCtx, imgCanvas, imgWidth, imgHeight)
+
+        // 把水印加在图片上
+        addWaterMark(watermarkCanvas, ctx, canvas)
+        console.log('finish')
+        const base64Url = imgCanvas.toDataURL();
+        const imgEle = document.getElementById('img-test-01')
+        imgEle.src = base64Url
+
+      }
+
+    }
+  </script>
+</body>
+
+</html>

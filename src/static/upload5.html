@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset=utf-8>
+  <title>文件上传</title>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <div>
+    <input type="file" name="file" id="file">
+    <br>
+    <h2>转换后</h2>
+    <img id="img-test-01" src="" alt="">
+    <h2>下载的</h2>
+    <img id="img-test-02" src="" alt="">
+  </div>
+  <script type="text/javascript"  src="/static/watermark.js"></script>
+  <script type="text/javascript">
+
+    var file = document.getElementById('file');
+    const instance = axios.create({
+      withCredentials: true
+    });
+
+    // 先加水印再上传，此方法改变源文件 -------------
+
+    const toBase64 = file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+
+    //将base64转换为文件
+    const dataURLtoFile = (dataurl, filename) => {
+      console.log('dataurl: ', dataurl);
+      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, { type: mime });
+    }
+
+    file.onchange = async function (e) {
+      const f1 = e.target.files[0];
+      let name = f1.name
+      const fileUrl = await toBase64(f1)
+      const img = new Image()
+      img.src = fileUrl
+      
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        const width = img.width
+        const height = img.height
+        canvas.width = width / 2;
+        canvas.height = height / 2;
+        const ctx = canvas.getContext('2d');
+
+        const options = {
+          textAlign: 'center',
+          textBaseline: 'middle',
+          fontSize: width * 0.02,
+          rotate: 30,
+          fillStyle: 'rgba(200,200, 200, 0.7)',
+          text: "明源云客电子商务有限公司",
+          watermarkHeight: 180,
+          watermarkWidth: 280
+        }
+
+        const watermark = new Watermark(canvas, options);
+        console.log('watermark: ', watermark);
+        // watermark.setOptions(options);
+        watermark.draw(fileUrl);
+
+        const base64Url = canvas.toDataURL();
+        const imgEle = document.getElementById('img-test-01')
+        imgEle.src = base64Url
+      }
+
+    }
+  </script>
+</body>
+
+</html>

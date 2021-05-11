@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset=utf-8>
+  <title>文件上传</title>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <div>
+    <input type="file" name="file" id="file">
+    <br>
+    <h2>转换后</h2>
+    <img id="img-test-01" src="" alt="">
+    <h2>下载的</h2>
+    <img id="img-test-02" src="" alt="">
+  </div>
+  <script type="text/javascript">
+
+    var file = document.getElementById('file');
+    console.log('file: ', file.value);
+    const instance = axios.create({
+      withCredentials: true
+    });
+
+    // 先加水印再上传，此方法改变源文件 -------------
+
+    const toBase64 = file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+
+    //将base64转换为文件
+    const dataURLtoFile = (dataurl, filename) => {
+      console.log('dataurl: ', dataurl);
+      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, { type: mime });
+    }
+
+    // 封装好的方法
+    const addMarkToImage = async (file, watermarkText) => {
+      // 工具方法：file转base64
+      const toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+
+      // 工具方法：将base64转换为文件
+      const dataURLtoFile = (dataurl, filename) => {
+        var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+          bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+      }
+
+      const { name } = file
+      const url = await toBase64(file)
+      const img = new Image()
+      img.src = url
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        const { width, height } = img
+        canvas.width = width / 2;
+        canvas.height = height / 2;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height, 0, 0, width / 2, height / 2);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = "20px Microsoft Yahei";
+        ctx.fillStyle = 'rgba(200,200,200 0.7)';
+        // ctx.fillText("明源云客电子商务有限公司", width - 150, height - 100);
+        ctx.fillText(watermarkText, 150, 150);
+        // ctx.rotate(-30*Math.PI/180)
+        const base64Url = canvas.toDataURL();
+        // const imgEle = document.getElementById('img-test-01')
+        // imgEle.src = base64Url
+        const fileData = dataURLtoFile(base64Url, name)
+        const formData = new FormData();
+        formData.append('file', fileData);
+        return formData
+      }
+    }
+
+    file.onchange = async function (e) {
+      var f1 = e.target.files[0];
+      let start = Date.now()
+      console.log('start-time:', start)
+      let name = f1.name
+      const fileUrl = await toBase64(f1)
+      const img = new Image()
+      img.src = fileUrl
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        const width = img.width
+        const height = img.height
+        canvas.width = width / 2;
+        canvas.height = height / 2;
+        const ctx = canvas.getContext('2d');
+        // API-drawImage-https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/drawImage
+        ctx.drawImage(img, 0, 0, width, height, 0, 0, width / 2, height / 2);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `${width * 0.02}px Microsoft Yahei`;
+        ctx.fillStyle = 'rgba(200,200, 200, 0.7)';
+        ctx.rotate(-30 * Math.PI/180)
+        const txt = "明源云客电子商务有限公司"
+        const strWidth = width * 0.02 * (txt.length + 3) / width
+        const strHeight = width * 0.02 * 2 / width
+        for (let i = 0;i < 1; i += strWidth) {
+            for (let j = 0;j < 1; j += strHeight) {
+              ctx.fillText(txt, i * width, j * height, 20);
+              // ctx.fillText(txt, - j * height * Math.sin(Math.PI / 6) + i * width, j * height);
+            }
+          }
+        const base64Url = canvas.toDataURL();
+        const imgEle = document.getElementById('img-test-01')
+        imgEle.src = base64Url
+        let end = Date.now()
+        console.log('end-time:', end)
+        console.log('耗时：', end - start)
+        // =========
+        const fileData = dataURLtoFile(base64Url, name)
+        var fdata = new FormData();
+        fdata.append('file', fileData);
+        instance.post('http://localhost:3001/upload', fdata).then(res => {
+          const imgEle = document.getElementById('img-test-02')
+          imgEle.src = res.data.url
+        }).catch(err => {
+          console.log(err);
+        });
+      }
+
+    }
+  </script>
+</body>
+
+</html>
