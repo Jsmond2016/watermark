@@ -17,12 +17,12 @@
   <script>
     const { sqrt, sin, pow, ceil, max, tan, PI, floor } = Math
 
-    const rotate = 15
+    const rotate = 30
     const fontSize = 20
     const width = 300
     console.log('width: ', width);
 
-    const height = ceil(tan(rotate * PI / 180) * width) + 3 * fontSize
+    const height = ceil(tan(rotate * PI / 180) * width)
     // const height = 600
 
     const canvas = document.getElementById("canvas");
@@ -38,8 +38,8 @@
 
     
     
-    // const text = '测试文字测试文字-测试文字测试文字测试文字-测试文字'
-    const text = '明源云客电子商务有限公司电子商务有限公司云客电子商务有限公司'
+    const text = '测试文字测试文字-测试文字测试文字测试文字-测试文字'
+    // const text = '明源云客电子商务有限公司'
     // 字符串的长度
     const textLen = ctx.measureText(text).width
     // 单个字符的宽度
@@ -62,8 +62,8 @@
     console.log('可以放的字符个数: ', remainLen / wordWidth);
 
 
-    let initX = 0
-    let initY = height - 3* fontSize
+    let initX = wordWidth
+    let initY = height
 
 
     for (let i = 0;i < text.length; i++) {

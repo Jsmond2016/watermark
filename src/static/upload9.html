@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <input type="file" name="file" id="file">
+  <br>
+  <h2>转换后</h2>
+  <img id="img-test-02" src="" alt="">
+  <img id="img-test-01" src="" alt="">
+  <img id="watermark" src="" alt="" style="border: 1px solid black;">
+
+  <script>
+    const toBase64 = file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+
+    var file = document.getElementById('file');
+    file.onchange = async function (e) {
+      var f1 = e.target.files[0];
+      let name = f1.name
+
+      const fileUrl = await toBase64(f1)
+      const img = new Image()
+      img.src = fileUrl
+      img.onload = function () {
+        const { width, height } = img
+        // 图片等比例缩小了1倍
+        const scaleNum = 1
+        const { canvas, ctx, canvasWidth, canvasHeight } = createImgCanvas(width / scaleNum, height / scaleNum)
+        ctx.drawImage(img, 0, 0, width, height, 0, 0, canvasWidth, canvasHeight);
+        addWaterMark(ctx, canvasWidth, canvasHeight)
+
+        const base64Url = canvas.toDataURL();
+        const imgEle = document.getElementById('img-test-02')
+        imgEle.src = base64Url
+      }
+    }
+
+    function createImgCanvas(width, height) {
+      const canvas = document.createElement('canvas');
+      const canvasWidth = width
+      const canvasHeight = height
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      const ctx = canvas.getContext('2d');
+      return { canvas, ctx, canvasWidth, canvasHeight }
+    }
+
+    function addWaterMark(imgCtx, width, height) {
+      const watermarkCanvas = createWatermark(width, "xxx电子商务有限公司")
+      const pat = imgCtx.createPattern(watermarkCanvas, 'repeat');
+      imgCtx.fillStyle = pat;
+      imgCtx.fillRect(0, 0, width, height);
+    }
+
+    /**
+     * 创建水印
+     * @param {*} imgWidth 
+     * @param {*} text 
+     * @returns 
+     */
+    function createWatermark(imgWidth, text = '') {
+      const canvas = document.createElement("canvas");
+      const { sqrt, pow, sin, cos, tan, PI } = Math;
+      const [minFontSize, minWidth, rotate, fontSizeRatio, columnNum] = [12, 200, 30, 0.03, 2];
+      const fontSize = parseInt(imgWidth * fontSizeRatio, 10) > minFontSize ? parseInt(imgWidth * fontSizeRatio, 10) : minFontSize;
+      const watermarkWidth = parseInt(imgWidth / columnNum, 10) > minWidth ? parseInt(imgWidth / columnNum, 10) : minWidth;
+      const watermarkHeight = parseInt(tan((rotate / 180) * PI) * watermarkWidth);
+      const watermarkHypotenuse = parseInt(sqrt(pow(watermarkWidth, 2) + pow(watermarkHeight, 2)));
+
+      canvas.width = watermarkWidth;
+      canvas.height = watermarkHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.font = `${fontSize}px Microsoft Yahei`;
+      ctx.fillStyle = "rgba(128, 128, 128, 0.5)";
+
+      ctx.rotate((-rotate * PI) / 180);
+      const x = -parseInt(sin((rotate / 180) * PI) * canvas.height, 10);
+      const y = parseInt(cos((rotate / 180) * PI) * canvas.height, 10);
+
+      renderText(ctx, watermarkHypotenuse, text, x, y, fontSize * 1.4, fontSize, rotate);
+
+
+      const base64Url = canvas.toDataURL();
+      const imgEle = document.getElementById('watermark')
+      imgEle.src = base64Url
+
+      return canvas;
+    }
+
+    /**
+     * 渲染文字
+     */
+    function renderText(ctx, width, str, initX, initY, lineHeight = 20, fontSize, rotate, padding = lineHeight, initLine = 0) {
+      const xl = parseInt(Math.tan((rotate / 180) * Math.PI) * lineHeight, 10);
+      const xr = parseInt(Math.tan(((90 - rotate) / 180) * Math.PI) * lineHeight, 10);
+      let line = initLine;
+      let lineWidth = 0;
+      let lastSubStrIndex = 0;
+      for (let i = 0;i < str.length;i++) {
+        const padLeft = padding + (line <= 0 ? ((-line + 1) * xl) : (line * xr));
+        const padRight = padding + (line <= 0 ? ((-line + 1) * xr) : (line * xl));
+        const maxWidth = width - padLeft - padRight;
+        lineWidth += ctx.measureText(str[i]).width;
+        if (lineWidth > maxWidth) {
+          ctx.fillText(str.substring(lastSubStrIndex, i), initX + padLeft, initY + line * lineHeight);
+          line += 1;
+          lineWidth = 0;
+          lastSubStrIndex = i;
+        }
+        if (i === str.length - 1) {
+          ctx.fillText(str.substring(lastSubStrIndex, i + 1), initX + padLeft, initY + line * lineHeight);
+        }
+      }
+    }
+
+
+  </script>
+
+</body>
+
+</html>
