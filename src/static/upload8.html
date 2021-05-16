@@ -16,6 +16,7 @@
   <img id="img-test-01" src="" alt="">
   <img id="watermark" src="" alt="">
 
+  <script src="../../node_modules/compressorjs/dist/compressor.min.js" type="text/javascript"></script>
   <script>
     const toBase64 = file => new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -23,6 +24,8 @@
       reader.onload = () => resolve(reader.result);
       reader.onerror = error => reject(error);
     });
+
+    new Compressor()
 
     var file = document.getElementById('file');
     file.onchange = async function (e) {
@@ -63,82 +66,8 @@
       imgCtx.fillRect(0, 0, width, height);
     }
 
-    // function createWatermark(imgWidth, imgHeight, text) {
-    //   const watermarkCanvas = document.createElement('canvas')
-    //   const { sqrt, pow, sin, cos, tan } = Math;
-    //   console.log('imgWidth * 0.02', imgWidth);
-    //   const fontSize = parseInt(imgWidth * 0.02, 10) > 12 ? parseInt(imgWidth * 0.02, 10) : 12
-    //   console.log('fontSize: ', fontSize);
 
-    //   // 水印实际长度, 2列
-    //   const watermarkWidth = parseInt((imgWidth) / 3, 10)
-    //   // 水印实际高度， 5行
-    //   const watermarkHeight = parseInt((imgHeight)  / 5, 10) + 3 * fontSize
-    //   // 逆时针旋转角度
-    //   const rotate = 15
-
-    //   watermarkCanvas.width = sqrt(pow(watermarkWidth, 2) + pow(watermarkHeight, 2));
-    //   watermarkCanvas.height = watermarkHeight;
-
-    //   const watermarkCtx = watermarkCanvas.getContext('2d')
-    //   watermarkCtx.font = `${fontSize}px Microsoft Yahei`
-    //   watermarkCtx.fillStyle = "rgba(128, 128, 128, 0.5)";
-    //   // watermarkCtx.textAlign = 'right';
-
-    //   // 30个汉字
-    //   const text1 = "明源云客电子商务有限公司电子商务有限公司云客电子商务有限公司"
-    //   // 60个英文字符
-    //   // const text1 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    //   // 1个字符
-    //   // const text1 = "1"
-    //   // 23个汉字
-    //   // const text1 = "明源云客电子商务有限公司明源云客电子商务有限公"
-    //   // 10个汉字
-    //   // const text1 = "明源云客电子商务有限"
-    //   const textWidth = watermarkCtx.measureText(text).width;
-
-    //   watermarkCtx.rotate(-rotate * Math.PI / 180)
-    //   const Y = parseInt(sin(rotate * Math.PI / 180) * watermarkWidth, 10);
-    //   const X = -parseInt(Y / tan((90 - rotate) * Math.PI / 180), 10);
-    //   renderText(watermarkCtx, watermarkWidth, text1, X + fontSize, Y + fontSize, fontSize * 1.4)
-
-
-    //   const base64Url = watermarkCanvas.toDataURL();
-    //   const imgEle = document.getElementById('watermark')
-    //   imgEle.src = base64Url
-    //   imgEle.style.border = "1px solid black"
-
-    //   return watermarkCanvas
-    // }
-
-    // function renderText(ctx, width, str, initX, initY, lineHeight = 20) {
-    //   var lineWidth = 0;
-    //   var canvasWidth = width;
-    //   var lastSubStrIndex = 0;
-    //   for (let i = 0;i < str.length;i++) {
-    //     lineWidth += ctx.measureText(str[i]).width;
-    //     // 行内剩余空间放不下一个字的时候
-    //     if (lineWidth > canvasWidth - initX) {
-    //       // 减去initX,防止边界出现的问题
-    //       ctx.fillText(str.substring(lastSubStrIndex, i), initX, initY);
-    //       initY += lineHeight;
-    //       lineWidth = 0;
-    //       lastSubStrIndex = i;
-    //     }
-    //     if (i === str.length - 1) {
-    //       ctx.fillText(str.substring(lastSubStrIndex, i + 1), initX, initY);
-    //     }
-    //   }
-    // }
-
-
-    /**
-     * 创建水印
-     * @param {*} imgWidth 
-     * @param {*} text 
-     * @returns 
-     */
-    function createWatermark(imgWidth, text = '') {
+    function createWatermark(imgWidth, imgHeight, text = '明源云客电子商务公司明源云客电子商务公司明源云客电子商务公司') {
       const canvas = document.createElement("canvas");
       const { sqrt, pow, sin, cos, tan, PI } = Math;
       const [minFontSize, minWidth, rotate, fontSizeRatio, columnNum] = [12, 200, 30, 0.03, 2];
@@ -159,12 +88,15 @@
 
       renderText(ctx, watermarkHypotenuse, text, x, y, fontSize * 1.4, fontSize, rotate);
 
+
+      const base64Url = canvas.toDataURL();
+      const imgEle = document.getElementById("watermark");
+      imgEle.src = base64Url;
+      imgEle.style.border = "1px solid black";
+
       return canvas;
     }
 
-    /**
-     * 渲染文字
-     */
     function renderText(ctx, width, str, initX, initY, lineHeight = 20, fontSize, rotate, padding = lineHeight, initLine = 0) {
       const xl = parseInt(Math.tan((rotate / 180) * Math.PI) * lineHeight, 10);
       const xr = parseInt(Math.tan(((90 - rotate) / 180) * Math.PI) * lineHeight, 10);

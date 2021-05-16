@@ -25,6 +25,7 @@ router.get('/', (ctx) => {
   ctx.type = 'html';
   // 读取文件
   const pathUrl = path.join(__dirname, '/static/upload10.html');
+
   ctx.body = fs.createReadStream(pathUrl);
 });
  
