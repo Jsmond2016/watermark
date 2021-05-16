@@ -24,7 +24,7 @@ router.get('/', (ctx) => {
   // 设置头类型, 如果不设置，会直接下载该页面
   ctx.type = 'html';
   // 读取文件
-  const pathUrl = path.join(__dirname, '/static/test.html');
+  const pathUrl = path.join(__dirname, '/static/upload8.html');
   ctx.body = fs.createReadStream(pathUrl);
 });
  

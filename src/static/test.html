@@ -39,7 +39,8 @@
     
     
     // const text = '测试文字测试文字-测试文字测试文字测试文字-测试文字'
-    const text = '明源云客电子商务有限公司电子商务有限公司云客电子商务有限公司'
+    // const text = '明源云客电子商务有限公司电子商务有限公司云客电子商务有限公司'
+    const text = '明源云客电子商务有限公司'
     // 字符串的长度
     const textLen = ctx.measureText(text).width
     // 单个字符的宽度
@@ -61,9 +62,11 @@
     console.log('remainLen: ', remainLen);
     console.log('可以放的字符个数: ', remainLen / wordWidth);
 
-
+    // 表示换几行
+    const changeLines = ceil(textLen / remainLen)
+    console.log('changeLineFlag: ', changeLines);
     let initX = 0
-    let initY = height - 3* fontSize
+    let initY = height - changeLines* fontSize
 
 
     for (let i = 0;i < text.length; i++) {

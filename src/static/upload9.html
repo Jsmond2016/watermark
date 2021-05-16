@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <input type="file" name="file" id="file">
+  <br>
+  <h2>转换后</h2>
+  <img id="img-test-02" src="" alt="">
+  <img id="img-test-01" src="" alt="">
+  <img id="watermark" src="" alt="">
+
+  <script>
+    const toBase64 = file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+
+    var file = document.getElementById('file');
+    file.onchange = async function (e) {
+      var f1 = e.target.files[0];
+      let name = f1.name
+
+      const fileUrl = await toBase64(f1)
+      const img = new Image()
+      img.src = fileUrl
+      img.onload = function () {
+        const { width, height } = img
+        // 图片等比例缩小了2倍
+        const scaleNum = 1
+        const { canvas, ctx, canvasWidth, canvasHeight } = createImgCanvas(width / scaleNum, height / scaleNum)
+        ctx.drawImage(img, 0, 0, width, height, 0, 0, canvasWidth, canvasHeight);
+        addWaterMark(ctx, canvasWidth, canvasHeight)
+
+        const base64Url = canvas.toDataURL();
+        const imgEle = document.getElementById('img-test-02')
+        imgEle.src = base64Url
+      }
+    }
+
+    function createImgCanvas(width, height) {
+      const canvas = document.createElement('canvas');
+      const canvasWidth = width
+      const canvasHeight = height
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      const ctx = canvas.getContext('2d');
+      return { canvas, ctx, canvasWidth, canvasHeight }
+    }
+
+    function addWaterMark(imgCtx, width, height) {
+      const watermarkCanvas = createWatermark(width, height)
+      const pat = imgCtx.createPattern(watermarkCanvas, 'repeat');
+      imgCtx.fillStyle = pat;
+      imgCtx.fillRect(0, 0, width, height);
+    }
+
+    function createWatermark(imgWidth, imgHeight) {
+      const canvas = document.createElement('canvas')
+      const { sqrt, sin, pow, ceil, max, tan, PI, floor } = Math
+      
+      // 字体大小占宽度的百分率
+      const FONT_SIZE_BITS = 0.03
+      const MIN_FONT_SIZE = 12
+      const MIN_WIDTH = ceil(MIN_FONT_SIZE / FONT_SIZE_BITS)
+      const COLUMNS = 3
+      const ROTATE = 30
+
+      const fontSize = floor(imgWidth * FONT_SIZE_BITS) > MIN_FONT_SIZE ? floor(imgWidth * FONT_SIZE_BITS) : MIN_FONT_SIZE
+      const width = floor(imgWidth / COLUMNS) > MIN_WIDTH ? floor(imgWidth / COLUMNS) : MIN_WIDTH
+      const height = ceil(tan(ROTATE * PI / 180) * width) + 3 * fontSize
+
+      canvas.width = width
+      canvas.height = height
+
+      const ctx = canvas.getContext("2d");
+      ctx.font = `${fontSize}px 黑体`
+      ctx.textBaseline = "middle"
+      ctx.textAlign = "start"
+      ctx.fillStyle = "rgba(128, 128, 128, 0.5)"
+
+
+      // const text = '明源云客电子商务有限公司'
+      const text = '明源云客电子商务有限公司电子商务有限公司云客电子商务有限公司'
+      
+      // 字符串的长度
+      const textLen = ctx.measureText(text).width
+      // 单个字符的宽度
+      const wordWidth = ceil(textLen / text.length)
+      // 左侧偏移的长度
+      const offX = ceil(sin(ROTATE * Math.PI / 180) * height)
+      console.log('offX: ', offX);
+
+      // 水印斜边的长度
+      const r = sqrt(pow(width, 2) + pow(height, 2))
+
+      // 旋转角度
+      ctx.rotate(- ROTATE * Math.PI / 180);
+
+      // 表示换几行
+      const changeLines = ceil(textLen / (r - offX))
+      // 斜边放字的剩余长度
+      let remainLen = r - changeLines * offX
+      console.log('remainLen: ', remainLen);
+      let initX = 0
+      let initY = height - changeLines * fontSize
+      
+      // 距离底部边距
+      let marginBottomY = 10
+      // 距离左侧边距
+      let marginLeftX = 10
+
+      const textProps = {
+        ctx, text, wordWidth, remainLen, initX: initX - marginLeftX, initY: initY - marginBottomY, fontSize, offX, r, changeLines, marginLeftX
+      }
+
+      renderText(textProps)
+
+
+      const base64Url = canvas.toDataURL();
+      const imgEle = document.getElementById('watermark')
+      imgEle.src = base64Url
+      imgEle.style.border = "1px solid black"
+
+      return canvas
+    }
+
+    function renderText(props) {
+      let { ctx, text, wordWidth, remainLen, initX, initY, fontSize, offX, r, changeLines, marginLeftX } = props
+      // debugger
+      for (let i = 0;i < text.length;i++) {
+        if (remainLen > wordWidth) {
+          ctx.fillText(text[i], initX, initY);
+          initX += wordWidth
+          remainLen -= wordWidth
+        } else {
+          initY += fontSize
+          remainLen = r - 2 * offX
+          initX = 0 - marginLeftX
+          ctx.fillText(text[i], initX, initY);
+          initX += wordWidth
+        }
+      }
+    }
+
+
+  </script>
+
+</body>
+
+</html>
