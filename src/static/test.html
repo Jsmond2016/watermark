@@ -39,9 +39,9 @@
 
 
     const text = '测试文字测试文字-测试文字测试文字测试文字-测试文字'
-    // const text = '明源云客电子商务有限公司'
+    // const text = '字节跳动电子商务有限公司'
     // const text = '测试文字测试文字-测试文字测试文字测试文字-测试文字'
-    // const text = '明源云客电子商务有限公司电子商务有限公司云客电子商务有限公司'
+    // const text = '字节跳动电子商务有限公司电子商务有限公司云客电子商务有限公司'
 
     // 字符串的长度
     const textLen = ctx.measureText(text).width
@@ -56,6 +56,8 @@
     const r = sqrt(pow(width, 2) + pow(height, 2))
     console.log('r: ', r);
 
+    // // 确定顶旋转点
+    // ctx.translate(width / 2, height / 2)
     // 旋转角度
     ctx.rotate(- rotate * Math.PI / 180);
 

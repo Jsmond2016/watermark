@@ -114,15 +114,15 @@ function createWatermark(imgWidth, imgHeight, text) {
   watermarkCtx.font = `${fontSize}px Microsoft Yahei`
   watermarkCtx.fillStyle = "rgba(200,200, 200, 0.7)";
   // 30个汉字
-  // const text = "明源云客电子商务有限公司明源云客电子商务有限公司商务有限公司"
+  // const text = "字节跳动电子商务有限公司字节跳动电子商务有限公司商务有限公司"
   // 60个英文字符
   // const text = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   // 1个字符
   // const text = "1"
   // 23个汉字
-  // const text = "明源云客电子商务有限公司明源云客电子商务有限公"
+  // const text = "字节跳动电子商务有限公司字节跳动电子商务有限公"
   // 10个汉字
-  // const text = "明源云客电子商务有限"
+  // const text = "字节跳动电子商务有限"
   // const textWidth = watermarkCtx.measureText(text).width;
   watermarkCtx.rotate(-rotate * Math.PI / 180)
   const Y = parseInt(sin(rotate * Math.PI / 180) * watermarkWidth, 10);

@@ -73,7 +73,7 @@
         // fontSize: imgWidth * 0.02,
         rotate: 30,
         fillStyle: 'rgba(200,200, 200, 0.7)',
-        text: "明源云客电子商务有限公司",
+        text: "字节跳动电子商务有限公司",
         watermarkHeight: 180,
         watermarkWidth: 280
       }
@@ -100,15 +100,15 @@
       watermarkCtx.font = `${fontSize}px Microsoft Yahei`
       watermarkCtx.fillStyle = "rgba(200,200, 200, 0.7)";
       // 30个汉字
-      const text1 = "明源云客电子商务有限公司明源云客电子商务有限公司商务有限公司"
+      const text1 = "字节跳动电子商务有限公司字节跳动电子商务有限公司商务有限公司"
       // 60个英文字符
       // const text1 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       // 1个字符
       // const text1 = "1"
       // 23个汉字
-      // const text1 = "明源云客电子商务有限公司明源云客电子商务有限公"
+      // const text1 = "字节跳动电子商务有限公司字节跳动电子商务有限公"
       // 10个汉字
-      // const text1 = "明源云客电子商务有限"
+      // const text1 = "字节跳动电子商务有限"
       const textWidth = watermarkCtx.measureText(text).width;
       watermarkCtx.rotate(-rotate * Math.PI / 180)
 

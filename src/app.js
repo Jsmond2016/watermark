@@ -5,10 +5,12 @@ const path = require('path');
 const router = require('koa-router')();
 const koaBody = require('koa-body');
 const static = require('koa-static');
- 
+const cors = require('koa-cors');
+
 // 实例化
 const app = new Koa();
- 
+app.use(cors()); 
+
 app.use(koaBody({
   multipart: true, // 支持文件上传
   formidable: {
@@ -24,7 +26,7 @@ router.get('/', (ctx) => {
   // 设置头类型, 如果不设置，会直接下载该页面
   ctx.type = 'html';
   // 读取文件
-  const pathUrl = path.join(__dirname, '/static/upload10.html');
+  const pathUrl = path.join(__dirname, '/static/upload.html');
 
   ctx.body = fs.createReadStream(pathUrl);
 });
@@ -78,5 +80,5 @@ app.use(router.routes()).use(router.allowedMethods());
  
 // 监听端口号
 app.listen(3001, () => {
-  console.log('server is listen at: http:localhost:3001');
+  console.log('server is listen at: http://www.localhost:3001');
 });

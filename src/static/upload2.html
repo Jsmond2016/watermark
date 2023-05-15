@@ -79,7 +79,7 @@
         ctx.textBaseline = 'middle';
         ctx.font = "20px Microsoft Yahei";
         ctx.fillStyle = 'rgba(200,200,200 0.7)';
-        // ctx.fillText("明源云客电子商务有限公司", width - 150, height - 100);
+        // ctx.fillText("字节跳动电子商务有限公司", width - 150, height - 100);
         ctx.fillText(watermarkText, 150, 150);
         // ctx.rotate(-30*Math.PI/180)
         const base64Url = canvas.toDataURL();
@@ -114,7 +114,7 @@
         ctx.font = `${width * 0.02}px Microsoft Yahei`;
         ctx.fillStyle = 'rgba(200,200, 200, 0.7)';
         ctx.rotate(-30 * Math.PI/180)
-        const txt = "明源云客电子商务有限公司"
+        const txt = "字节跳动电子商务有限公司"
         const strWidth = width * 0.02 * (txt.length + 3) / width
         const strHeight = width * 0.02 * 2 / width
         for (let i = 0;i < 1; i += strWidth) {

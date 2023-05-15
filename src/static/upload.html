@@ -16,9 +16,7 @@
   <script type="text/javascript">
 
     var file = document.getElementById('file');
-    const instance = axios.create({
-      withCredentials: true
-    });
+    const instance = axios.create();
     // 先上传再加水印，此方法不改变源文件
     file.onchange = function (e) {
       var f1 = e.target.files[0];
@@ -40,12 +38,7 @@
           ctx.textBaseline = 'middle';
           ctx.font = "20px Microsoft Yahei";
           ctx.fillStyle = 'rgba(246,92,45, 0.9)';
-          // for (let i = 0.1;i < 1;i += 0.1) {
-          //   for (let j = 0.1;j < 1;j += 0.1) {
-          //     ctx.fillText("明源云客电子商务有限公司", i * width, j * height);
-          //   }
-          // }
-          ctx.fillText("明源云客电子商务有限公司", width - 150, height - 100);
+          ctx.fillText("字节跳动电子商务有限公司", 100, 20);
           const base64Url = canvas.toDataURL();
           const imgEle = document.getElementById('img-test')
           imgEle.src = base64Url

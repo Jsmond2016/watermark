@@ -27,7 +27,7 @@ function Watermark(canvas, opt = {}) {
 
   const getOptions = () => {
     const defaultOptions = {
-      text: "明源云客电子商务有限公司",
+      text: "字节跳动电子商务有限公司",
       fontSize: 23,
       fillStyle: "rgba(100, 100, 100, 0.4)",
       watermarkWidth: 280,
